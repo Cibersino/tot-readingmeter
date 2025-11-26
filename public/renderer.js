@@ -92,7 +92,7 @@ async function updatePreviewAndResults(text) {
   } else if (n <= 200) {
     textPreview.textContent = displayText;
   } else {
-    const start = displayText.slice(0,275);
+    const start = displayText.slice(0, 275);
     const end = displayText.slice(-275);
     textPreview.textContent = `${start}... | ...${end}`;
   }
@@ -158,7 +158,7 @@ const loadPresets = async () => {
   });
 
   // 3) Convertir a array y ordenar
-  const finalList = Array.from(map.values()).sort((a,b) => a.name.localeCompare(b.name));
+  const finalList = Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
 
   // Guardar caché y poblar DOM del select
   allPresetsCache = finalList.slice();
@@ -237,6 +237,20 @@ const loadPresets = async () => {
 
   } catch (e) {
     console.error("Error inicializando renderer:", e);
+  }
+  // ======================= BARRA SUPERIOR: ejemplo de receptor =======================
+  if (window.electronAPI && typeof window.electronAPI.onMenuClick === 'function') {
+    window.electronAPI.onMenuClick((payload) => {
+      // Ejemplo temporal: si el payload es 'guia_basica'
+      if (payload === 'guia_basica') {
+        console.log("Botón 'Guía básica' pulsado - acción temporal de ejemplo");
+        alert("Guía básica pulsada (acción temporal)");
+      }
+      // Otros botones pueden manejarse aquí
+      else {
+        console.log("menu-click recibido:", payload);
+      }
+    });
   }
 })();
 
