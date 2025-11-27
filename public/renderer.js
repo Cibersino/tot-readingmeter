@@ -238,19 +238,32 @@ const loadPresets = async () => {
   } catch (e) {
     console.error("Error inicializando renderer:", e);
   }
-  // ======================= BARRA SUPERIOR: ejemplo de receptor =======================
-  if (window.electronAPI && typeof window.electronAPI.onMenuClick === 'function') {
-    window.electronAPI.onMenuClick((payload) => {
-      // Ejemplo temporal: si el payload es 'guia_basica'
-      if (payload === 'guia_basica') {
-        console.log("Botón 'Guía básica' pulsado - acción temporal de ejemplo");
-        alert("Guía básica pulsada (acción temporal)");
-      }
-      // Otros botones pueden manejarse aquí
-      else {
-        console.log("menu-click recibido:", payload);
-      }
+  // ======================= BARRA SUPERIOR: registrar acciones con menuActions =======================
+  // Asegúrate de que menu.js fue cargado (script incluido antes de renderer.js)
+  if (window.menuActions && typeof window.menuActions.registerMenuAction === 'function') {
+    // Ejemplo: acción para 'guia_basica'
+    window.menuActions.registerMenuAction('guia_basica', () => {
+      console.log("Botón 'Guía básica' pulsado - acción temporal (registrada vía menuActions)");
+      alert("Guía básica pulsada (acción temporal)");
     });
+
+    // Puedes registrar más acciones de ejemplo aquí:
+    window.menuActions.registerMenuAction('instrucciones_completas', () => {
+      console.log("Instrucciones completas - acción temporal (registrada vía menuActions)");
+      // TODO: reemplazar por navegación/modal real
+    });
+
+    // Ejemplo genérico para ver payloads no registrados explícitamente:
+    // (opcional) registrar un "catch-all" no es necesario; menu.js ya loguea payloads sin handler.
+  } else {
+    // Si menuActions no está disponible, registra un receptor directo (fallback)
+    if (window.electronAPI && typeof window.electronAPI.onMenuClick === 'function') {
+      window.electronAPI.onMenuClick((payload) => {
+        console.log('menu-click recibido (fallback desde renderer):', payload);
+      });
+    } else {
+      console.warn('menuActions y electronAPI.onMenuClick no disponibles — la barra superior no será manejada por renderer.');
+    }
   }
 })();
 
