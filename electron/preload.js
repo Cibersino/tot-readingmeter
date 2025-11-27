@@ -37,11 +37,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // ======================= NUEVO: listener estable para barra superior =======================
   onMenuClick: (cb) => {
-    // cb(payload) donde payload es un string que identifica el botón
-    ipcRenderer.on("menu-click", (_e, payload) => {
-      try { cb(payload); } catch (err) {
-        console.error("menuAPI callback error:", err);
+    const channel = 'menu-click';
+    const wrapper = (_e, payload) => {
+      try { cb(payload); } catch (err) { console.error('menuAPI callback error:', err); }
+    };
+    ipcRenderer.on(channel, wrapper);
+
+    // devolver una función para desuscribirse
+    return () => {
+      try {
+        ipcRenderer.removeListener(channel, wrapper);
+      } catch (e) {
+        console.error('Error removing menu listener:', e);
       }
-    });
+    };
   }
 });
