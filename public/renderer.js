@@ -41,6 +41,8 @@ const btnOverwriteClipboard = document.getElementById('btnOverwriteClipboard');
 const btnAppendClipboard = document.getElementById('btnAppendClipboard');
 const btnEdit = document.getElementById('btnEdit');
 const btnEmptyMain = document.getElementById('btnEmptyMain');
+const btnLoadSnapshot = document.getElementById('btnLoadSnapshot');
+const btnSaveSnapshot = document.getElementById('btnSaveSnapshot');
 const btnHelp = document.getElementById('btnHelp');
 
 // =============================================================================
@@ -214,11 +216,15 @@ function applyTranslations() {
   if (btnAppendClipboard) btnAppendClipboard.textContent = tRenderer('renderer.main.buttons.append_clipboard', btnAppendClipboard.textContent || '');
   if (btnEdit) btnEdit.textContent = tRenderer('renderer.main.buttons.edit', btnEdit.textContent || '');
   if (btnEmptyMain) btnEmptyMain.textContent = tRenderer('renderer.main.buttons.clear', btnEmptyMain.textContent || '');
+  if (btnLoadSnapshot) btnLoadSnapshot.textContent = tRenderer('renderer.main.buttons.load_snapshot', btnLoadSnapshot.textContent || '');
+  if (btnSaveSnapshot) btnSaveSnapshot.textContent = tRenderer('renderer.main.buttons.save_snapshot', btnSaveSnapshot.textContent || '');
   // Text selector tooltips
   if (btnOverwriteClipboard) btnOverwriteClipboard.title = tRenderer('renderer.main.tooltips.overwrite_clipboard', btnOverwriteClipboard.title || '');
   if (btnAppendClipboard) btnAppendClipboard.title = tRenderer('renderer.main.tooltips.append_clipboard', btnAppendClipboard.title || '');
   if (btnEdit) btnEdit.title = tRenderer('renderer.main.tooltips.edit', btnEdit.title || '');
   if (btnEmptyMain) btnEmptyMain.title = tRenderer('renderer.main.tooltips.clear', btnEmptyMain.title || '');
+  if (btnLoadSnapshot) btnLoadSnapshot.title = tRenderer('renderer.main.tooltips.load_snapshot', btnLoadSnapshot.title || '');
+  if (btnSaveSnapshot) btnSaveSnapshot.title = tRenderer('renderer.main.tooltips.save_snapshot', btnSaveSnapshot.title || '');
   // Presets
   if (btnNewPreset) btnNewPreset.textContent = tRenderer('renderer.main.speed.new', btnNewPreset.textContent || '');
   if (btnEditPreset) btnEditPreset.textContent = tRenderer('renderer.main.speed.edit', btnEditPreset.textContent || '');
@@ -1576,6 +1582,20 @@ const initCronoController = () => {
 };
 
 initCronoController();
+
+const snapshotsUi = (typeof window !== 'undefined') ? window.CurrentTextSnapshotsUI : null;
+if (snapshotsUi && typeof snapshotsUi.init === 'function') {
+  snapshotsUi.init({
+    guardUserAction,
+    electronAPI: window.electronAPI,
+    notify: Notify,
+  });
+} else {
+  log.warnOnce(
+    'renderer.snapshots.module.unavailable',
+    'CurrentTextSnapshotsUI unavailable; snapshot controls will not work.'
+  );
+}
 
 uiListenersArmed = true;
 runStartupOrchestrator();

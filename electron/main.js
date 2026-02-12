@@ -25,8 +25,10 @@ const { MAX_TEXT_CHARS, MAX_IPC_CHARS, MAX_META_STR_CHARS, DEFAULT_LANG } = requ
 const {
   initStorage,
   ensureConfigDir,
+  ensureSavedCurrentTextsDir,
   getSettingsFile,
   getCurrentTextFile,
+  getSavedCurrentTextsDir,
   loadJson,
   saveJson,
 } = require('./fs_storage');
@@ -38,6 +40,7 @@ const menuBuilder = require('./menu_builder');
 const presetsMain = require('./presets_main');
 const updater = require('./updater');
 const { registerLinkIpc } = require('./link_openers');
+const currentTextSnapshots = require('./current_text_snapshots');
 
 const log = Log.get('main');
 log.debug('Main process starting...');
@@ -1307,6 +1310,13 @@ app.whenReady().then(() => {
     mainWin,
     editorWin,
   }));
+  currentTextSnapshots.registerIpc(ipcMain, {
+    getWindows: () => ({ mainWin, editorWin }),
+    ensureSnapshotsDir: ensureSavedCurrentTextsDir,
+    getSnapshotsDir: getSavedCurrentTextsDir,
+    getCurrentText: textState.getCurrentText,
+    applyCurrentText: textState.applyCurrentText,
+  });
 
   settingsState.registerIpc(ipcMain, {
     getWindows: () => ({

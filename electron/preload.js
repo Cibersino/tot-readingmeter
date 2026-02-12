@@ -59,6 +59,8 @@ const api = {
 
     // Force clear editor (invoked by renderer when user presses 'Empty' in the main screen)
     forceClearEditor: () => ipcRenderer.invoke('force-clear-editor'),
+    saveCurrentTextSnapshotViaDialog: () => ipcRenderer.invoke('current-text-snapshot-save-via-dialog'),
+    loadCurrentTextSnapshotViaDialog: () => ipcRenderer.invoke('current-text-snapshot-load-via-dialog'),
 
     // ======================= Stable listener for top bar =======================
     onMenuClick: (cb) => {

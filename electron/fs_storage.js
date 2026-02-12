@@ -68,6 +68,10 @@ function getEditorStateFile() {
   return path.join(getConfigDir(), 'editor_state.json');
 }
 
+function getSavedCurrentTextsDir() {
+  return path.join(getConfigDir(), 'saved_current_texts');
+}
+
 function ensureConfigDir() {
   try {
     const dir = getConfigDir();
@@ -86,6 +90,18 @@ function ensureConfigPresetsDir() {
     }
   } catch (err) {
     log.error('ensureConfigPresetsDir failed:', presetsDir || '(uninitialized)', err);
+  }
+}
+
+function ensureSavedCurrentTextsDir() {
+  let snapshotsDir = null;
+  try {
+    snapshotsDir = getSavedCurrentTextsDir();
+    if (!fs.existsSync(snapshotsDir)) {
+      fs.mkdirSync(snapshotsDir, { recursive: true });
+    }
+  } catch (err) {
+    log.error('ensureSavedCurrentTextsDir failed:', snapshotsDir || '(uninitialized)', err);
   }
 }
 
@@ -180,8 +196,10 @@ module.exports = {
   getSettingsFile,
   getCurrentTextFile,
   getEditorStateFile,
+  getSavedCurrentTextsDir,
   ensureConfigDir,
   ensureConfigPresetsDir,
+  ensureSavedCurrentTextsDir,
   loadJson,
   saveJson,
 };

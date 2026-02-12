@@ -224,64 +224,7 @@ function registerIpc(ipcMain, windowsResolver) {
 
   // set-current-text: accept { text, meta } or simple string
   ipcMain.handle('set-current-text', (_event, payload) => {
-    try {
-      const isPayloadObject = payload && typeof payload === 'object';
-      const hasTextProp =
-        isPayloadObject &&
-        Object.prototype.hasOwnProperty.call(payload, 'text');
-      if (isPayloadObject && !hasTextProp) {
-        log.warnOnce(
-          'text_state.setCurrentText.missingText',
-          'set-current-text payload missing text; using String(payload).'
-        );
-      }
-      const incomingMeta = hasTextProp ? sanitizeMeta(payload.meta) : null;
-      let text = hasTextProp ? String(payload.text || '') : String(payload || '');
-
-      if (text.length > maxIpcChars) {
-        log.warnOnce(
-          'text_state.setCurrentText.payload_too_large',
-          `set-current-text payload too large (${text.length} > ${maxIpcChars}); rejecting.`
-        );
-        throw new Error('set-current-text payload too large');
-      }
-
-      let truncated = false;
-      if (text.length > maxTextChars) {
-        text = text.slice(0, maxTextChars);
-        truncated = true;
-        log.warn(
-          'text_state.setCurrentText.truncated',
-          'set-current-text: entry truncated to effective hard cap of ' + maxTextChars + ' chars.'
-        );
-      }
-
-      currentText = text;
-
-      const { mainWin, editorWin } = getWindows() || {};
-
-      // Notify main window (for renderer to update preview/results)
-      safeSend(mainWin, 'current-text-updated', currentText);
-
-      // Notify editor with object { text, meta }
-      safeSend(editorWin, 'editor-text-updated', {
-        text: currentText,
-        meta: incomingMeta || { source: 'main', action: 'set' },
-      });
-
-      return {
-        ok: true,
-        truncated,
-        length: currentText.length,
-        text: currentText,
-      };
-    } catch (err) {
-      const msg = err && typeof err.message === 'string' ? err.message : '';
-      if (msg !== 'set-current-text payload too large') {
-        log.error('Error in set-current-text:', err);
-      }
-      return { ok: false, error: String(err) };
-    }
+    return applyCurrentText(payload);
   });
 
   // Forced cleaning of the editor (invoked from the main screen)
@@ -310,6 +253,67 @@ function getCurrentText() {
   return currentText || '';
 }
 
+function applyCurrentText(payload) {
+  try {
+    const isPayloadObject = payload && typeof payload === 'object';
+    const hasTextProp =
+      isPayloadObject &&
+      Object.prototype.hasOwnProperty.call(payload, 'text');
+    if (isPayloadObject && !hasTextProp) {
+      log.warnOnce(
+        'text_state.setCurrentText.missingText',
+        'set-current-text payload missing text; using String(payload).'
+      );
+    }
+    const incomingMeta = hasTextProp ? sanitizeMeta(payload.meta) : null;
+    let text = hasTextProp ? String(payload.text || '') : String(payload || '');
+
+    if (text.length > maxIpcChars) {
+      log.warnOnce(
+        'text_state.setCurrentText.payload_too_large',
+        `set-current-text payload too large (${text.length} > ${maxIpcChars}); rejecting.`
+      );
+      throw new Error('set-current-text payload too large');
+    }
+
+    let truncated = false;
+    if (text.length > maxTextChars) {
+      text = text.slice(0, maxTextChars);
+      truncated = true;
+      log.warn(
+        'text_state.setCurrentText.truncated',
+        'set-current-text: entry truncated to effective hard cap of ' + maxTextChars + ' chars.'
+      );
+    }
+
+    currentText = text;
+
+    const { mainWin, editorWin } = getWindows() || {};
+
+    // Notify main window (for renderer to update preview/results)
+    safeSend(mainWin, 'current-text-updated', currentText);
+
+    // Notify editor with object { text, meta }
+    safeSend(editorWin, 'editor-text-updated', {
+      text: currentText,
+      meta: incomingMeta || { source: 'main', action: 'set' },
+    });
+
+    return {
+      ok: true,
+      truncated,
+      length: currentText.length,
+      text: currentText,
+    };
+  } catch (err) {
+    const msg = err && typeof err.message === 'string' ? err.message : '';
+    if (msg !== 'set-current-text payload too large') {
+      log.error('Error in set-current-text:', err);
+    }
+    return { ok: false, error: String(err) };
+  }
+}
+
 // =============================================================================
 // Exports / module surface
 // =============================================================================
@@ -317,6 +321,7 @@ module.exports = {
   init,
   registerIpc,
   getCurrentText,
+  applyCurrentText,
 };
 
 // =============================================================================
